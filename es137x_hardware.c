@@ -4,10 +4,14 @@
  *
  * Authors:
  *		Bek, host.haiku@gmx.de
+ *		Zayn Otley, intuitionamiga@gmail.com
  */
 #include "driver.h"
 
-status_t es137x_hw_create_virtual_buffers(device_stream_t* stream, const char* name) {
+
+status_t
+null_hw_create_virtual_buffers(device_stream_t* stream, const char* name)
+{
 	int i;
 	int buffer_size;
 	int area_size;
@@ -36,7 +40,10 @@ status_t es137x_hw_create_virtual_buffers(device_stream_t* stream, const char* n
 	return B_OK;
 }
 
-static int32 es137x_fake_interrupt(void* cookie) {
+
+static int32
+null_fake_interrupt(void* cookie)
+{
 	// This thread is supposed to fake the interrupt
 	// handling done in communication with the
 	// hardware usually. What it does is nearly the
@@ -88,14 +95,21 @@ static int32 es137x_fake_interrupt(void* cookie) {
 	return B_OK;
 }
 
-status_t es137x_start_hardware(device_t* device) {
+
+status_t
+null_start_hardware(device_t* device)
+{
 	dprintf("es137x_audio: %s spawning fake interrupter\n", __func__);
 	device->running = true;
-	device->interrupt_thread = spawn_kernel_thread(es137x_fake_interrupt, "es137x_audio interrupter", B_REAL_TIME_PRIORITY, (void*)device);
+	device->interrupt_thread = spawn_kernel_thread(null_fake_interrupt, "es137x_audio interrupter",
+								B_REAL_TIME_PRIORITY, (void*)device);
 	return resume_thread(device->interrupt_thread);
 }
 
 
-void es137x_stop_hardware(device_t* device) {
+void
+null_stop_hardware(device_t* device)
+{
 	device->running = false;
 }
+

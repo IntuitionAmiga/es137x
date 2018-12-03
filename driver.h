@@ -2,8 +2,8 @@
  * Copyright 2007 Haiku Inc. All rights reserved.
  * Distributed under the terms of the MIT License.
  */
-#ifndef ES137X_AUDIO_DRIVER_H
-#define ES137X_AUDIO_DRIVER_H
+#ifndef NULL_AUDIO_DRIVER_H
+#define NULL_AUDIO_DRIVER_H
 
 #include <drivers/driver_settings.h>
 #include <drivers/Drivers.h>
@@ -42,7 +42,7 @@ typedef struct {
 typedef struct {
 	device_stream_t playback_stream;
 	device_stream_t record_stream;
-
+	
 	thread_id interrupt_thread;
 	bool running;
 } device_t;
@@ -52,9 +52,9 @@ int32 format_to_sample_size(uint32 format);
 
 status_t multi_audio_control(void* cookie, uint32 op, void* arg, size_t len);
 
-status_t es137x_hw_create_virtual_buffers(device_stream_t* stream, const char* name);
-status_t es137x_start_hardware(device_t* device);
-void es137x_stop_hardware(device_t* device);
+status_t null_hw_create_virtual_buffers(device_stream_t* stream, const char* name);
+status_t null_start_hardware(device_t* device);
+void null_stop_hardware(device_t* device);
 
-#endif /* ES137X_AUDIO_DRIVER_H */
+#endif /* NULL_AUDIO_DRIVER_H */
 

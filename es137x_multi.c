@@ -4,14 +4,18 @@
  *
  * Authors:
  *		Bek, host.haiku@gmx.de
+ *		Zayn Otley, intuitionamiga@gmail.com
  */
 #include "driver.h"
 
+
 // Convenience function to determine the byte count
 // of a sample for a given format.
-// Note: Currently es137x_audio only supports 16 bit,
+// Note: Currently null_audio only supports 16 bit,
 // but that is supposed to change later
-int32 format_to_sample_size(uint32 format) {
+int32
+format_to_sample_size(uint32 format)
+{
 	switch(format) {
 		case B_FMT_8BIT_S:
 			return 1;
@@ -29,6 +33,7 @@ int32 format_to_sample_size(uint32 format) {
 	}
 }
 
+
 multi_channel_info channel_descriptions[] = {
 	{  0, B_MULTI_OUTPUT_CHANNEL, 	B_CHANNEL_LEFT | B_CHANNEL_STEREO_BUS, 0 },
 	{  1, B_MULTI_OUTPUT_CHANNEL, 	B_CHANNEL_RIGHT | B_CHANNEL_STEREO_BUS, 0 },
@@ -40,7 +45,10 @@ multi_channel_info channel_descriptions[] = {
 	{  7, B_MULTI_INPUT_BUS, 		B_CHANNEL_RIGHT | B_CHANNEL_STEREO_BUS, B_CHANNEL_MINI_JACK_STEREO },
 };
 
-static status_t get_description(void* cookie, multi_description* data) {
+
+static status_t
+get_description(void* cookie, multi_description* data)
+{
 	multi_description description;
 
 	dprintf("es137x_audio: %s\n" , __func__ );
@@ -52,7 +60,7 @@ static status_t get_description(void* cookie, multi_description* data) {
 	description.interface_version = B_CURRENT_INTERFACE_VERSION;
 	description.interface_minimum = B_CURRENT_INTERFACE_VERSION;
 
-	strcpy(description.friendly_name,"Virtual audio (es137x_audio)");
+	strcpy(description.friendly_name,"Ensoniq AC97 audio (es137x_audio)");
 	strcpy(description.vendor_info,"Host/Haiku");
 
 	description.output_channel_count = 2;
@@ -89,7 +97,10 @@ static status_t get_description(void* cookie, multi_description* data) {
 	return B_OK;
 }
 
-static status_t get_enabled_channels(void* cookie, multi_channel_enable* data) {
+
+static status_t
+get_enabled_channels(void* cookie, multi_channel_enable* data)
+{
 	dprintf("es137x_audio: %s\n" , __func__ );
 	// By default we say, that all channels are enabled
 	// and that this cannot be changed
@@ -100,7 +111,10 @@ static status_t get_enabled_channels(void* cookie, multi_channel_enable* data) {
 	return B_OK;
 }
 
-static status_tset_global_format(device_t* device, multi_format_info* data) {
+
+static status_t
+set_global_format(device_t* device, multi_format_info* data)
+{
 	// The media kit asks us to set our streams
 	// according to its settings
 	dprintf("es137x_audio: %s\n" , __func__ );
@@ -113,7 +127,10 @@ static status_tset_global_format(device_t* device, multi_format_info* data) {
 	return B_OK;
 }
 
-static status_t get_global_format(device_t* device, multi_format_info* data) {
+
+static status_t
+get_global_format(device_t* device, multi_format_info* data)
+{
 	dprintf("es137x_audio: %s\n" , __func__ );
 	// Zero latency is unlikely to happen, so we fake some
 	// additional latency
@@ -129,7 +146,11 @@ static status_t get_global_format(device_t* device, multi_format_info* data) {
 	return B_OK;
 }
 
-static int32 create_group_control(multi_mix_control* multi, int32 idx, int32 parent, int32 string, const char* name) {
+
+static int32
+create_group_control(multi_mix_control* multi, int32 idx, int32 parent,
+					int32 string, const char* name)
+{
 	multi->id = MULTI_AUDIO_BASE_ID + idx;
 	multi->parent = parent;
 	multi->flags = B_MULTI_MIX_GROUP;
@@ -141,7 +162,10 @@ static int32 create_group_control(multi_mix_control* multi, int32 idx, int32 par
 	return multi->id;
 }
 
-static status_t list_mix_controls(device_t* device, multi_mix_control_info * data) {
+
+static status_t
+list_mix_controls(device_t* device, multi_mix_control_info * data)
+{
 	int32 parent;
 	dprintf("es137x_audio: %s\n" , __func__ );
 
@@ -152,17 +176,26 @@ static status_t list_mix_controls(device_t* device, multi_mix_control_info * dat
 	return B_OK;
 }
 
-static status_t list_mix_connections(void* cookie, multi_mix_connection_info* connection_info) {
+
+static status_t
+list_mix_connections(void* cookie, multi_mix_connection_info* connection_info)
+{
 	dprintf("es137x_audio: %s\n" , __func__ );
 	return B_ERROR;
 }
 
-static status_t list_mix_channels(void* cookie, multi_mix_channel_info* channel_info) {
+
+static status_t
+list_mix_channels(void* cookie, multi_mix_channel_info* channel_info)
+{
 	dprintf("es137x_audio: %s\n" , __func__ );
 	return B_ERROR;
 }
 
-static status_t get_buffers(device_t* device, multi_buffer_list* data) {
+
+static status_t
+get_buffers(device_t* device, multi_buffer_list* data)
+{
  	uint32 playback_sample_size
 	 	= format_to_sample_size(device->playback_stream.format);
  	uint32 record_sample_size
@@ -201,7 +234,7 @@ static status_t get_buffers(device_t* device, multi_buffer_list* data) {
 	device->playback_stream.num_buffers = data->request_playback_buffers;
 	device->playback_stream.num_channels = data->request_playback_channels;
 	device->playback_stream.buffer_length = data->request_playback_buffer_size;
-	result = es137x_hw_create_virtual_buffers(&device->playback_stream,
+	result = null_hw_create_virtual_buffers(&device->playback_stream,
 				"es137x_audio_playback_sem");
 	if (result != B_OK) {
 		dprintf("es137x_audio %s: Error setting up playback buffers (%s)\n",
@@ -212,7 +245,7 @@ static status_t get_buffers(device_t* device, multi_buffer_list* data) {
 	device->record_stream.num_buffers = data->request_record_buffers;
 	device->record_stream.num_channels = data->request_record_channels;
 	device->record_stream.buffer_length = data->request_record_buffer_size;
-	result = es137x_hw_create_virtual_buffers(&device->record_stream,
+	result = null_hw_create_virtual_buffers(&device->record_stream,
 				"es137x_audio_record_sem");
 	if (result != B_OK) {
 		dprintf("es137x_audio %s: Error setting up recording buffers (%s)\n",
@@ -250,7 +283,10 @@ static status_t get_buffers(device_t* device, multi_buffer_list* data) {
 	return B_OK;
 }
 
-static status_t buffer_exchange(device_t* device, multi_buffer_info* info) {
+
+static status_t
+buffer_exchange(device_t* device, multi_buffer_info* info)
+{
 	//dprintf("es137x_audio: %s\n" , __func__ );
 	static int debug_buffers_exchanged = 0;
 	cpu_status status;
@@ -263,7 +299,7 @@ static status_t buffer_exchange(device_t* device, multi_buffer_info* info) {
 	// On first call, we start our fake hardware.
 	// Usually one would jump into his interrupt handler now
 	if (!device->running)
-		es137x_start_hardware(device);
+		null_start_hardware(device);
 
 	result = acquire_sem(device->playback_stream.buffer_ready_sem);
 	if (result != B_OK) {
@@ -303,11 +339,14 @@ static status_t buffer_exchange(device_t* device, multi_buffer_info* info) {
 	return B_OK;
 }
 
-static status_t buffer_force_stop(device_t* device) {
+
+static status_t
+buffer_force_stop(device_t* device)
+{
 	dprintf("es137x_audio: %s\n" , __func__ );
 
 	if (device && device->running)
-		es137x_stop_hardware(device);
+		null_stop_hardware(device);
 
 	delete_area(device->playback_stream.buffer_area);
 	delete_area(device->record_stream.buffer_area);
@@ -318,7 +357,10 @@ static status_t buffer_force_stop(device_t* device) {
 	return B_OK;
 }
 
-status_t multi_audio_control(void* cookie, uint32 op, void* arg, size_t len) {
+
+status_t
+multi_audio_control(void* cookie, uint32 op, void* arg, size_t len)
+{
 	switch(op) {
 		case B_MULTI_GET_DESCRIPTION:		return get_description(cookie, arg);
 		case B_MULTI_GET_EVENT_INFO:		return B_ERROR;
@@ -345,3 +387,4 @@ status_t multi_audio_control(void* cookie, uint32 op, void* arg, size_t len) {
 	dprintf("es137x_audio: %s - unknown op\n" , __func__);
 	return B_BAD_VALUE;
 }
+
